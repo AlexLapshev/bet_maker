@@ -14,7 +14,7 @@ class Rabbit:
     connection_pool = None
     channel_pool = None
 
-    def __init__(self, settings: QueueSettings = QueueSettings()):
+    def __init__(self, settings: QueueSettings = QueueSettings()) -> None:
         self.settings = settings
 
     async def __call__(self) -> "Rabbit":

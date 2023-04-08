@@ -27,14 +27,13 @@ def startup() -> None:
 async def create_bet(
     bet: BetBaseSchema, db_session: AsyncSession = Depends(db)
 ) -> uuid.UUID:
-    # не было в задании, можно проверять на фронте
     if await utils.events.utils.check_bet_for_outdated(bet):
         raise HTTPException(status_code=409, detail="Event is outdated")
     return await BetCrud(db_session).add(bet)
 
 
 @app.get("/bets")
-async def get_event(db_session: AsyncSession = Depends(db)) -> list[BetSchema]:
+async def get_bet(db_session: AsyncSession = Depends(db)) -> list[BetSchema]:
     bets = await BetCrud(db_session).get_all()
     return bets
 
