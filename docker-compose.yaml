@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+
+  bet_maker_q:
+    image: rabbitmq:3.8.6-management-alpine
+    container_name: bet_maker_q
+    ports:
+     - "5672:5672"
+     - "15672:15672"
+    networks:
+      - line_provider_net
+
+  bet_maker_db:
+    image: postgres
+    container_name: bet_maker_db
+    restart: always
+    environment:
+      - POSTGRES_DB=bet_maker_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - line_provider_net
+
+  bet_maker:
+    build: .
+    container_name: bet_maker
+    profiles: ["with_api"]
+    ports:
+      - "8001:8001"
+    environment:
+      - RMQ_HOST=bet_maker_q
+      - POSTGRES_HOST=bet_maker_db
+      - LINE_PROVIDER_URL=http://line_provider:8000
+    depends_on:
+      - bet_maker_db
+      - bet_maker_q
+    command: bash -c "sleep 2 && alembic upgrade head && uvicorn app:app --host 0.0.0.0 --port 8001"
+    networks:
+      - line_provider_net
+
+networks:
+  line_provider_net:
+    driver: bridge
